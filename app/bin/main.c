@@ -12,15 +12,13 @@
 /*----------------------------------------------------------------
  * DECLARATIONS DES VARIABLES GLOBALES
  ----------------------------------------------------------------*/
-volatile int accumulator_1_1=0; //flag d'incrÈment de la valeur des leds pour le chemin aller
-volatile int accumulator_1_2=7; //flag d'incrÈment de la valeur des leds pour le chemin retour
-volatile int accumulator_2_1=0; //flag d'incrÈment de la valeur des premiËres leds 0 -> 3
-volatile int accumulator_2_2=7; //flag d'incrÈment de la valeur des derniËres leds 4 -> 7
-volatile int Sequence = 0; //Variable flag qui permet de gÈrer la SÈquence ‡ rÈaliser.
-volatile int ls1=0; //Variable flag aller de la sÈquence 1
-volatile int rs1=0; //Variable flag retour de la sÈquence 1
-volatile int is2=0; //Variable flag aller de la sÈquence 2
-volatile int os2=0; //Variable flag retour de la sÈquence 2
+volatile int accumulator_1_1=0; //flag d'incr√©ment de la valeur des leds pour le chemin aller
+volatile int accumulator_1_2=7; //flag d'incr√©ment de la valeur des leds pour le chemin retour
+volatile int accumulator_2_1=0; //flag d'incr√©ment de la valeur des premi√®res leds 0 -> 3
+volatile int accumulator_2_2=7; //flag d'incr√©ment de la valeur des derni√®res leds 4 -> 7
+volatile int Sequence = 0; //Variable flag qui permet de g√©rer la S√©quence √† r√©aliser.
+volatile int s1=0; //Variable flag aller de la s√©quence 1
+volatile int s2=0; //Variable flag aller de la s√©quence 2
 
 unsigned int etatprecedantP2p3;
 /**
@@ -45,7 +43,7 @@ int main(void)
 	P3DIR |= (1<<3);
 	P3DIR |= (1<<4);
 	P3DIR |= (1<<5);
-	//Initialisation des 4 derniËres LED
+	//Initialisation des 4 derni√®res LED
 	P4DIR |= (1<<0);
 	P4DIR |= (1<<1);
 	P4DIR |= (1<<2);
@@ -53,34 +51,31 @@ int main(void)
 	etatprecedentP2p3 = BP_GetState_SwitchNum(3);
 
 	while(1){
-	    if(Sequence==0 && ls1==0){
+	    if(Sequence==0 && s1==0){
 	        chenillard(1<<accumulator_1_1);
 	        if((BP_GetState_SwitchNum(3)==0)&&(etatprecedentP2p3==1)){
 	            Sequence=1;
 	        }etatprecedentP2p3=BP_GetState_SwitchNum(3);
-	    }else if(Sequence==0 && rs1==0){
+	    }else if(Sequence==0 && s1==1){
 	        chenillard(1<<accumulator_1_2);
 	        if((BP_GetState_SwitchNum(3)==0)&&(etatprecedentP2p3==1)){
 	            Sequence=1;
 	        }etatprecedentP2p3=BP_GetState_SwitchNum(3);
-	    }else if(Sequence==1 && is2==0){
+	    }else if(Sequence==1 && s2==0){
 	        chenillard((1<<accumulateur_2_1)|(1<<accumulateur_2_2));
 	        if((BP_GetState_SwitchNum(3)==0)&&(etatprecedentP2p3==1)){
 	            Sequence=0;
 	        }etatprecedentP2p3=BP_GetState_SwitchNum(3);
-	    }else if(Sequence==1 && os2==0){
+	    }else if(Sequence==1 && s2==1){
 	        chenillard((1<<accumulateur_2_1)|(1<<accumulateur_2_2));
 	        if((BP_GetState_SwitchNum(3)==0)&&(etatprecedentP2p3==1)){
 	            Sequence=0;
 	        }etatprecedentP2p3=BP_GetState_SwitchNum(3);
-	    }else{
-	        /*Erreur dans la sÈquence*/
-	    }
 	}
 }
 	/*----------------------------------------------------------------------------
-	__interrupt void Timer_A(void) : Notez que cette n'est pas appÈlee dans le MAIN
-	                         Mais est executÈe par dÈclenchement matÈrielle
+	__interrupt void Timer_A(void) : Notez que cette n'est pas app√©lee dans le MAIN
+	                         Mais est execut√©e par d√©clenchement mat√©rielle
 	    Routine interruption du Timer Timer_A :
 	    vecteur interruption ou adresse memoire = TIMER0_A0_VECTOR
 	    Attention a la notation de TI :
@@ -98,38 +93,29 @@ int main(void)
 	#pragma vector=TA0CCR0     // vecteur interruption TA0CCR0
 	__interrupt void Timer_A (void)
 	{
-	    //SÈquence 1
-	    if((((Sequence==0)&&(accumulator_1_1==0))|((Sequence==0)&&(accumulator_1_1<7)))&&(ls1==0)){
+	    //S√©quence 1
+	    if((((Sequence==0)&&(accumulator_1_1==0))|((Sequence==0)&&(accumulator_1_1<7)))&&(s1==0)){
 	       accumulator_1_1++;
-	       if(accumulator_1_1==7)ls1=1;
-	    }else if((((Sequence==0)&&(accumulator_1_1==7))|((Sequence==0)&&(accumulator_1_2>0)))&&(rs1==0)){
+	       if(accumulator_1_1==7)s1=1;
+	    }else if((((Sequence==0)&&(accumulator_1_1==7))|((Sequence==0)&&(accumulator_1_2>0)))&&(s1==1)){
 	       accumulator_1_2--;
-	       if(accumulator_1_2==0)rs1=1;
-	    }else{
-	        accumulator_1_1=0;
-	        accumulator_1_2=7;
-	        ls1=0;
-	        rs1=0;
+	       if(accumulator_1_2==0){
+		       s1=0;
+		       accumulator_1_1=0;
+		       accumulator_1_2=7;
+	       }
 	    }
 
-	    //SÈquence 2
-	    if((((Sequence==1)&&(accumulator_2_1==0)&&(accumulator_2_2==7))|((Sequence==1)&&(accumulator_2_1<3)&&(accumulator_2_2>4)))&&(is2==0)){
+	    //S√©quence 2
+	    if((((Sequence==1)&&(accumulator_2_1==0)&&(accumulator_2_2==7))|((Sequence==1)&&(accumulator_2_1<3)&&(accumulator_2_2>4)))&&(s2==0)){
 	        accumulator_2_1++;
 	        accumulator_2_2--;
-	        if(accumulator_2_1==3 && accumulator_2_2==4)is2=1;
-	    }else if((((Sequence==1)&&(accumulator_2_1==3)&&(accumulator_2_2==4))|((Sequence==1)&&(accumulator_2_1>0)&&(accumulator_2_2<7)))&&(os2==0)){
+	        if(accumulator_2_1==3 && accumulator_2_2==4)s2=1;
+	    }else if((((Sequence==1)&&(accumulator_2_1==3)&&(accumulator_2_2==4))|((Sequence==1)&&(accumulator_2_1>0)&&(accumulator_2_2<7)))&&(s2==1)){
 	        accumulator_2_1--;
 	        accumulator_2_2++;
-	        if(accumulator_2_1 ==0 && accumulator_2_2 ==7)os2=1;
-	    }else{
-	        accumulator_2_1=0;
-	        accumulator_2_2=7;
-	        is2=0;
-	        rs2=0;
+	        if(accumulator_2_1 ==0 && accumulator_2_2 ==7)s2=0;
 	    }
-
-
-
 
 	 /* pas de rechargement de TA0CCR0 :
 	    car en mode uP le timer  compte jusqu a la valeur TACCR0 et recommence
